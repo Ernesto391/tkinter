@@ -6,6 +6,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import deque
 
+## :::::::::::::::::::::: DEFINICION DE FUNCIONES O CLASES ::::::::::::::::::::::
+
 class Lista:
     def __init__(self):
         self.lista = []
