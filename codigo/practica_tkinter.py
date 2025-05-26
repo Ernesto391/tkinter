@@ -310,7 +310,6 @@ class GrafoDirigido:
         }
         self.crearNodo()
         self.crearAristas()
-        grafo = nx.DiGraph()
 
     def crearNodo(self):
         for nombre, atributo in self.pelicula.items():
@@ -342,6 +341,22 @@ class GrafoDirigido:
         nx.draw(grafo, with_labels=True)
         plt.show()
 
+class GradoNoDirigido:
+    def __init__(self):
+        self.nodos = []
+        self.adyacencias = {}
+        self.atributos = {}
+        self.pelicula = ['A', 'B', 'C', ]
+        self.crearAristas()
+
+    def crearAristas(self):
+        grafoNoDirigido.add_edges_from([('A', 'B'), ('B', 'C'), ('C', 'A'), ('C', 'D'), ('B','E')])
+
+    def verGrafo(self):
+        plt.gcf().canvas.manager.set_window_title('Grafo NO dirigido')
+        nx.draw(grafoNoDirigido, with_labels=True)
+        plt.show()
+
 class Principal:
     def __init__(self):
         self.lista = Lista()
@@ -350,6 +365,7 @@ class Principal:
         self.pila = Pila()
         self.cola = Cola()
         self.grafoDirigido = GrafoDirigido()
+        self.grafoNoDirigido = GradoNoDirigido()
         self.crearMenu()
     
     def crearMenu(self):
@@ -374,7 +390,7 @@ class Principal:
         #Creacion grafos
         menu_grafos = tk.Menu(menu_principal, tearoff=0)
         menu_grafos.add_command(label='Grafos dirigido', command=self.grafoDirigido.verGrafo)
-        menu_grafos.add_command(label='Grafo NO dirigido')
+        menu_grafos.add_command(label='Grafo NO dirigido', command=self.grafoNoDirigido.verGrafo)
         menu_principal.add_cascade(label='Grafos', menu=menu_grafos)
         ventana.config(menu=menu_principal)
         ventana.mainloop()
@@ -382,6 +398,7 @@ class Principal:
 ## :::::::::::::::::::::::: VARIABLES U OBJETOS GLOBALES ::::::::::::::::::::::::
 
 grafo = nx.DiGraph()
+grafoNoDirigido = nx.Graph()
 nodos = []
 
 ## :::::::::::::::::::::::::::::: BLOQUE PRINCIPAL ::::::::::::::::::::::::::::::
