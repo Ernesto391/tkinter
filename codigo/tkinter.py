@@ -1,3 +1,11 @@
+## ::::::::::::::::::::::::::::::::: ENCABEZADO :::::::::::::::::::::::::::::::::
+# PRACTICA DE TKINTER
+# Realizado por: PIÑA SALINAS LUIS ERNESTO
+# Version: 1.0
+
+# Descripcion: En una ventana de tkinter habra un menu en donde contendra 
+# ejemplos de contenedores, estructuras de datos y grafos
+
 ## :::::::::::::::::::: IMPORTACION DE MODULOS Y BIBLIOTECAS ::::::::::::::::::::
 
 import tkinter as tk
