@@ -1,11 +1,16 @@
 ## ::::::::::::::::::::::::::::::::: ENCABEZADO :::::::::::::::::::::::::::::::::
-# PRACTICA DE TKINTER
-# Realizado por: PIÑA SALINAS LUIS ERNESTO
-# Version: 1.0
+''''
+PRACTICA DE TKINTER
+Realizado por: PIÑA SALINAS LUIS ERNESTO
 
-# Descripcion: En una ventana de tkinter habra un menu en donde contendra 
-# ejemplos de contenedores, estructuras de datos y grafos
+Descripcion: En una ventana de tkinter habra un menu en donde contendra 
+ejemplos de contenedores, estructuras de datos y grafos
 
+Version 1.3
+Modificaciones:
++ Se agrego la clase ABB
+
+'''
 ## :::::::::::::::::::: IMPORTACION DE MODULOS Y BIBLIOTECAS ::::::::::::::::::::
 
 import tkinter as tk
@@ -502,8 +507,8 @@ class ABB:
         # Creacion de la imagen del arbol
         dot = self.visualizar()
         if dot:
-            dot.render("arbol_binario", format="png", cleanup=True)
-            imagen = Image.open("arbol_binario.png")
+            dot.render("codigo/imagenes/arbol_binario", format="png", cleanup=True)
+            imagen = Image.open("codigo/imagenes/arbol_binario.png")
             imagen = imagen.resize((500, 500))
             imagen_tk = ImageTk.PhotoImage(imagen)
 
