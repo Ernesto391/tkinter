@@ -9,6 +9,7 @@ ejemplos de contenedores, estructuras de datos y grafos
 Version 1.3
 Modificaciones:
 + Se agrego la clase ABB
++ Se agrego el url codigo/imagenes/arbol_binario en el metodo verArbol()
 
 '''
 ## :::::::::::::::::::: IMPORTACION DE MODULOS Y BIBLIOTECAS ::::::::::::::::::::
@@ -495,16 +496,10 @@ class ABB:
         self.parcial3Entry.delete(0, tk.END)
 
     def verArbol(self):
-        # Cracion de la ventana para ver el arbol
         self.ventanaArbol = tk.Toplevel(self.ventana)
-        self.ventanaArbol.title('Viendo el arbol')
+        self.ventanaArbol.title('Viendo el árbol')
         self.ventanaArbol.geometry('600x600+500+240')
 
-        # Creacion del espacio para ver el arbol
-        imagenArbol = tk.Label(self.ventanaArbol)
-        imagenArbol.pack(pady=10)
-
-        # Creacion de la imagen del arbol
         dot = self.visualizar()
         if dot:
             dot.render("codigo/imagenes/arbol_binario", format="png", cleanup=True)
@@ -512,8 +507,9 @@ class ABB:
             imagen = imagen.resize((500, 500))
             imagen_tk = ImageTk.PhotoImage(imagen)
 
-            imagenArbol.configure(image=imagen_tk)
-            imagenArbol.image = imagen_tk
+            label = tk.Label(self.ventanaArbol, image=imagen_tk)
+            label.image = imagen_tk 
+            label.pack(pady=10)
         else:
             messagebox.showinfo("Árbol vacío", "No hay elementos en el árbol.")
 
@@ -612,12 +608,6 @@ class ABB:
         self.ventana.title('Arbol binario')
         self.ventana.geometry('700x500+300+240')
 
-    def ventana(self):
-        # Creacion de la ventana principal
-        self.ventana = tk.Tk()
-        self.ventana.title('Arbol binario')
-        self.ventana.geometry('700x500+300+240')
-
         # Creacion de la interfaz interactiva con el usuario
           ## Especificacion al ususario de que colocar
         tk.Label(self.ventana, text=f'Boleta:', font=('Arial',16)).grid(row=0, column=0)
@@ -648,7 +638,7 @@ class ABB:
         botonEliminar.grid(row=5, column=1)
         botonBuscar = tk.Button(self.ventana, text='Buscar', command=lambda: self.buscar())
         botonBuscar.grid(row=5, column=2)
-        botonB = tk.Button(self.ventana, text='Ver el arbol', command=lambda: self.verArbol())
+        botonB = tk.Button(self.ventana, text='Ver el arbol', command=self.verArbol)
         botonB.grid(row=5, column=3)
         botonC = tk.Button(self.ventana, text='Recorrido Inorden', command=lambda: self.inorden())
         botonC.grid(row=7, column=0)
@@ -697,7 +687,7 @@ class Principal:
         menu_grafos = tk.Menu(menu_principal, tearoff=0)
         menu_grafos.add_command(label='Grafos dirigido', command=self.grafoDirigido.verGrafo)
         menu_grafos.add_command(label='Grafo NO dirigido', command=self.grafoNoDirigido.verGrafo)
-        menu_grafos.add_command(label='Arbol binario', command=self.ABB.ventana)
+        menu_grafos.add_command(label='Arbol binario', command=self.ABB.crearVentana)
         menu_principal.add_cascade(label='Grafos', menu=menu_grafos)
         ventana.config(menu=menu_principal)
         ventana.mainloop()
