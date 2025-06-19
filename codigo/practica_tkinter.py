@@ -13,6 +13,8 @@ from tkinter import messagebox
 import networkx as nx
 import matplotlib.pyplot as plt
 from collections import deque
+from graphviz import Digraph
+from PIL import Image, ImageTk
 
 ## :::::::::::::::::::::: DEFINICION DE FUNCIONES O CLASES ::::::::::::::::::::::
 
@@ -357,6 +359,304 @@ class GradoNoDirigido:
         nx.draw(grafoNoDirigido, with_labels=True)
         plt.show()
 
+class Nodo:
+    def __init__(self, boleta, nombre, prom):
+        self.boleta = boleta
+        self.nombre = nombre
+        self.prom = prom
+        self.izq = None
+        self.der = None
+
+    def __str__(self):
+        return f"{self.boleta} - {self.nombre} - {self.prom: .3}"
+
+class ABB:
+    def __init__(self):
+        self.raiz = None
+        self.personas = []
+        self.personasIniciales = {
+            'Caridad Medina':{
+                'boleta':20252280,
+                'prom': 9.567
+            },
+            'Wes Anderson':{
+                'boleta':20252023,
+                'prom':9.654
+            },
+            'Josh Dun':{
+                'boleta':20254567,
+                'prom':7.478
+            },
+            'Luz Shelby':{
+                'boleta':20251234,
+                'prom': 8.785
+            },
+            'Camilo Villaruel':{
+                'boleta':20257890,
+                'prom': 7.987
+            }
+        }
+        for nombre, atributos in self.personasIniciales.items():
+            boleta = atributos['boleta']
+            prom = atributos['prom']
+            if self.raiz is None:
+                self.raiz = Nodo(boleta, nombre, prom)
+            else:
+                self._insertar_recursivo(self.raiz, boleta, nombre, prom)
+
+    def _insertar_recursivo(self, nodo, boleta, nombre, prom):
+        if boleta < nodo.boleta:
+            if nodo.izq is None:
+                nodo.izq = Nodo(boleta, nombre, prom)
+            else:
+                self._insertar_recursivo(nodo.izq, boleta, nombre, prom)
+        elif boleta > nodo.boleta:
+            if nodo.der is None:
+                nodo.der = Nodo(boleta, nombre, prom)
+            else:
+                self._insertar_recursivo(nodo.der, boleta, nombre, prom)
+
+    def visualizar(self):
+        punto = Digraph()
+        punto.attr('node', shape='rectangle')
+        if self.raiz is not None:
+            self._visualizar_recursivo(self.raiz, punto)
+            return punto
+
+    def _visualizar_recursivo(self, nodo, punto):
+        punto.node(f'{nodo.boleta}\n{nodo.nombre}\n{nodo.prom: .3}')
+        if nodo.izq is not None:
+            punto.edge(f'{nodo.boleta}\n{nodo.nombre}\n{nodo.prom: .3}', f'{nodo.izq.boleta}\n{nodo.izq.nombre}\n{nodo.izq.prom: .3}')
+            self._visualizar_recursivo(nodo.izq, punto)
+        if nodo.der is not None:
+            punto.edge(f'{nodo.boleta}\n{nodo.nombre}\n{nodo.prom: .3}', f'{nodo.der.boleta}\n{nodo.der.nombre}\n{nodo.der.prom: .3}')
+            self._visualizar_recursivo(nodo.der, punto)
+
+    def inorden(self):
+        self.recorrido = []
+        self._inorden_recursivo(self.raiz)
+        texto = f'Recorrido Inorden:\n' + '\n'.join(str(elemento) for elemento in self.recorrido)
+        self.mostrar.configure(text=texto)
+
+    def _inorden_recursivo(self, nodo):
+        if nodo is not None:
+            self._inorden_recursivo(nodo.izq)
+            actual = nodo.__str__()
+            self.recorrido.append(actual)
+            self._inorden_recursivo(nodo.der)
+
+    def preorden(self):
+        self.recorrido = []
+        self._preorden_recursivo(self.raiz)
+        texto = f'Recorrido Preorden:\n' + '\n'.join(str(elemento) for elemento in self.recorrido)
+        self.mostrar.configure(text=texto)
+
+    def _preorden_recursivo(self, nodo):
+        if nodo is not None:
+            actual = nodo
+            self.recorrido.append(actual)
+            self._preorden_recursivo(nodo.izq)
+            self._preorden_recursivo(nodo.der)
+
+    def postorden(self):
+        self.recorrido = []
+        self._postorden_recursivo(self.raiz)
+        texto = f'Recorrido Postorden:\n' + '\n'.join(str(elemento) for elemento in self.recorrido)
+        self.mostrar.configure(text=texto)
+
+    def _postorden_recursivo(self, nodo):
+        if nodo is not None:
+            self._postorden_recursivo(nodo.izq)
+            self._postorden_recursivo(nodo.der)
+            actual = nodo.__str__()
+            self.recorrido.append(actual)
+
+    def insertar(self):
+        boleta = int(self.boletaEntry.get())
+        nombre = self.nombreEntry.get()
+        parcial1 = int(self.parcial1Entry.get())
+        parcial2 = int(self.parcial2Entry.get())
+        parcial3 = int(self.parcial3Entry.get())
+        prom = (parcial1 + parcial2 + parcial3)/3
+        if self.raiz is None:
+            self.raiz = Nodo(boleta, nombre, prom)
+        else:
+            self._insertar_recursivo(self.raiz, boleta, nombre, prom)
+        messagebox.showinfo("Éxito", "Persona insertada en el árbol.")
+        self.boletaEntry.delete(0, tk.END)
+        self.nombreEntry.delete(0, tk.END)
+        self.parcial1Entry.delete(0, tk.END)
+        self.parcial2Entry.delete(0, tk.END)
+        self.parcial3Entry.delete(0, tk.END)
+
+    def verArbol(self):
+        # Cracion de la ventana para ver el arbol
+        self.ventanaArbol = tk.Toplevel(self.ventana)
+        self.ventanaArbol.title('Viendo el arbol')
+        self.ventanaArbol.geometry('600x600+500+240')
+
+        # Creacion del espacio para ver el arbol
+        imagenArbol = tk.Label(self.ventanaArbol)
+        imagenArbol.pack(pady=10)
+
+        # Creacion de la imagen del arbol
+        dot = self.visualizar()
+        if dot:
+            dot.render("arbol_binario", format="png", cleanup=True)
+            imagen = Image.open("arbol_binario.png")
+            imagen = imagen.resize((500, 500))
+            imagen_tk = ImageTk.PhotoImage(imagen)
+
+            imagenArbol.configure(image=imagen_tk)
+            imagenArbol.image = imagen_tk
+        else:
+            messagebox.showinfo("Árbol vacío", "No hay elementos en el árbol.")
+
+    def buscar(self):
+        # Modificar el texto en pantalla
+        def aceptar():
+            boleta = int(self.busqueda.get())
+            if self._buscar_recursivo(self.raiz, boleta):
+                messagebox.showinfo('Exito', f'La boleta {boleta} esta inscrita')
+            else:
+                messagebox.showinfo('Error', f'La boleta {boleta} NO esta inscrita')
+            self.busqueda.destroy()
+            self.botonBusqueda.destroy()
+            self.boletaBusqueda.destroy()
+
+        # Limpiar texto de pantalla
+        self.mostrar.configure(text='')
+        tk.Label(self.ventana, text=' ', font=('Arial', 16)).grid(row=8, column=0)
+        self.boletaBusqueda = tk.Label(self.ventana, text='Escriba la boleta a buscar', font=('Arial', 16))
+        self.boletaBusqueda.grid(row=9, column=0)
+        self.busqueda = tk.Entry(self.ventana)
+        self.busqueda.grid(row=9, column=1)
+        self.botonBusqueda = tk.Button(self.ventana, text='Aceptar', command=lambda: aceptar())
+        self.botonBusqueda.grid(row=9, column=3)
+
+    def _buscar_recursivo(self, nodo, boleta):
+        if nodo is None:
+            return False
+        elif boleta == nodo.boleta:
+            return True
+        elif boleta < nodo.boleta:
+            return self._buscar_recursivo(nodo.izq, boleta)
+        else:
+            return self._buscar_recursivo(nodo.der, boleta)
+
+    def eliminar(self):
+        # Modificar el texto en pantalla
+        def aceptar():
+            # Comprobar si la boleta existe
+            boleta = int(self.borrar.get())
+            if self._buscar_recursivo(self.raiz, boleta):
+                self._eliminar_recursivo(self.raiz, boleta)
+                messagebox.showinfo('Exito', f'Se ha eliminado la boleta: {boleta}')
+            else:
+                messagebox.showerror('Error', f'No existe la boleta: {boleta}')
+            self.borrar.destroy()
+            self.botonEliminar.destroy()
+            self.boletaEliminar.destroy()
+
+        # Limpiar texto de la pantalla
+        self.mostrar.configure(text='')
+        tk.Label(self.ventana, text=' ', font=('Arial', 16)).grid(row=8, column=0)
+        self.boletaEliminar = tk.Label(self.ventana, text='Escriba la boleta a eliminar', font=('Arial', 16))
+        self.boletaEliminar.grid(row=9, column=0)
+        self.borrar = tk.Entry(self.ventana)
+        self.borrar.grid(row=9, column=1)
+        self.botonEliminar = tk.Button(self.ventana, text='Aceptar', command=lambda: aceptar())
+        self.botonEliminar.grid(row=9, column=3)
+
+    def _eliminar_recursivo(self, nodo, valor):
+        if nodo is None:
+            return None
+        elif valor < nodo.boleta:
+            nodo.izq = self._eliminar_recursivo(nodo.izq, valor)
+        elif valor > nodo.boleta:
+            nodo.der = self._eliminar_recursivo(nodo.der, valor)
+        else:
+            if nodo.izq is None:
+                return nodo.der
+            elif nodo.der is None:
+                return nodo.izq
+            sucesor = self._minimo_nodo(nodo.der)
+            nodo.boleta = sucesor.boleta
+            nodo.nombre = sucesor.nombre
+            nodo.prom = sucesor.prom
+            nodo.der = self._eliminar_recursivo(nodo.der, sucesor.boleta)
+        return nodo
+
+    def profundidad(self):
+        if self.raiz is None:
+            messagebox.showerror('ERROR', 'No hay datos')
+        else:
+            prof = self._profundidad_recursiva(self.raiz)
+            messagebox.showinfo('Exito', f'La profundidad es: {prof}')
+
+    def _profundidad_recursiva(self, nodo):
+        if nodo is None:
+            return 0
+        izq = self._profundidad_recursiva(nodo.izq)
+        der = self._profundidad_recursiva(nodo.der)
+        return 1 + max(izq, der)
+
+    def crearVentana(self):
+        # Creacion de la ventana principal
+        self.ventana = tk.Tk()
+        self.ventana.title('Arbol binario')
+        self.ventana.geometry('700x500+300+240')
+
+    def ventana(self):
+        # Creacion de la ventana principal
+        self.ventana = tk.Tk()
+        self.ventana.title('Arbol binario')
+        self.ventana.geometry('700x500+300+240')
+
+        # Creacion de la interfaz interactiva con el usuario
+          ## Especificacion al ususario de que colocar
+        tk.Label(self.ventana, text=f'Boleta:', font=('Arial',16)).grid(row=0, column=0)
+        tk.Label(self.ventana, text=f'Nombre:', font=('Arial',16)).grid(row=0, column=2)
+        tk.Label(self.ventana, text=f'Calificacion del primer parcial', font=('Arial',16)).grid(row=1, column=0)
+        tk.Label(self.ventana, text=f'Calificacion del segundo parcial', font=('Arial',16)).grid(row=2, column=0)
+        tk.Label(self.ventana, text=f'Calificacion del tercer parcial', font=('Arial',16)).grid(row=3, column=0)
+        tk.Label(self.ventana, text=' ', font=('Arial',16)).grid(row=4, column=0) # Esta parte es para crear un espacio en blanco y mejorar el diseño
+        tk.Label(self.ventana, text=' ', font=('Arial',16)).grid(row=6, column=0) # Esta parte es para crear un espacio en blanco y mejorar el diseño
+        self.mostrar = tk.Label(self.ventana, text=' ', font=('Arial',16))
+        self.mostrar.grid(row=10, column=0)
+          ## Creacion de las entradas de datos
+        self.boletaEntry = tk.Entry(self.ventana)
+        self.boletaEntry.grid(row=0, column=1)
+        self.nombreEntry = tk.Entry(self.ventana)
+        self.nombreEntry.grid(row=0, column=3)
+        self.parcial1Entry = tk.Entry(self.ventana)
+        self.parcial1Entry.grid(row=1, column=1)
+        self.parcial2Entry = tk.Entry(self.ventana)
+        self.parcial2Entry.grid(row=2, column=1)
+        self.parcial3Entry = tk.Entry(self.ventana)
+        self.parcial3Entry.grid(row=3, column=1)
+
+        # Creacion de botones
+        botonA = tk.Button(self.ventana, text='Insertar', command=lambda: self.insertar())
+        botonA.grid(row=5, column=0)
+        botonEliminar = tk.Button(self.ventana, text='Eliminar', command=lambda: self.eliminar())
+        botonEliminar.grid(row=5, column=1)
+        botonBuscar = tk.Button(self.ventana, text='Buscar', command=lambda: self.buscar())
+        botonBuscar.grid(row=5, column=2)
+        botonB = tk.Button(self.ventana, text='Ver el arbol', command=lambda: self.verArbol())
+        botonB.grid(row=5, column=3)
+        botonC = tk.Button(self.ventana, text='Recorrido Inorden', command=lambda: self.inorden())
+        botonC.grid(row=7, column=0)
+        botonD = tk.Button(self.ventana, text='Recorrido Preorden', command=lambda: self.preorden())
+        botonD.grid(row=7, column=1)
+        botonE = tk.Button(self.ventana, text='Recorrido Postorden', command=lambda: self.postorden())
+        botonE.grid(row=7, column=2)
+        botonProfundidad = tk.Button(self.ventana, text='Profundidad', command=lambda: self.profundidad())
+        botonProfundidad.grid(row=7, column=3)
+
+        self.ventana.mainloop()
+
+
 class Principal:
     def __init__(self):
         self.lista = Lista()
@@ -366,6 +666,7 @@ class Principal:
         self.cola = Cola()
         self.grafoDirigido = GrafoDirigido()
         self.grafoNoDirigido = GradoNoDirigido()
+        self.ABB = ABB()
         self.crearMenu()
     
     def crearMenu(self):
@@ -391,6 +692,7 @@ class Principal:
         menu_grafos = tk.Menu(menu_principal, tearoff=0)
         menu_grafos.add_command(label='Grafos dirigido', command=self.grafoDirigido.verGrafo)
         menu_grafos.add_command(label='Grafo NO dirigido', command=self.grafoNoDirigido.verGrafo)
+        menu_grafos.add_command(label='Arbol binario', command=self.ABB.ventana)
         menu_principal.add_cascade(label='Grafos', menu=menu_grafos)
         ventana.config(menu=menu_principal)
         ventana.mainloop()
