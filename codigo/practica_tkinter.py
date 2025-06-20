@@ -702,5 +702,17 @@ nodos = []
 
 if __name__ == '__main__':
     menu = Principal()
+## :::::::::::::::::::::::::::::::: COMENTARIOS :::::::::::::::::::::::::::::::::
+'''
+Es necesario descargar las siguientes bibliotecas:
+pip install pillow
+pip install graphviz pillow
+
+
+Ademas se debe tener instalado Graphviz en el sistema y agregado en el PATH
+para que funcione el codigo.
+link de descarga: https://graphviz.org/download/
+
+'''
 
     
