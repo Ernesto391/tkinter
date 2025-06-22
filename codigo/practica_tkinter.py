@@ -496,20 +496,25 @@ class ABB:
         self.parcial3Entry.delete(0, tk.END)
 
     def verArbol(self):
+        # Cracion de la ventana para ver el arbol
         self.ventanaArbol = tk.Toplevel(self.ventana)
-        self.ventanaArbol.title('Viendo el árbol')
-        self.ventanaArbol.geometry('600x600+500+240')
+        self.ventanaArbol.title('Viendo el arbol')
+        self.ventanaArbol.geometry('500x500+500+240')
 
+        # Creacion del espacio para ver el arbol
+        imagenArbol = tk.Label(self.ventanaArbol)
+        imagenArbol.pack(pady=10)
+
+        # Creacion de la imagen del arbol
         dot = self.visualizar()
         if dot:
-            dot.render("codigo/imagenes/arbol_binario", format="png", cleanup=True)
-            imagen = Image.open("codigo/imagenes/arbol_binario.png")
+            dot.render("imagen/imagen_arbol", format="png", cleanup=True)
+            imagen = Image.open("imagen/imagen_arbol.png")
             imagen = imagen.resize((500, 500))
-            imagen_tk = ImageTk.PhotoImage(imagen)
+            self.imagen_tk = ImageTk.PhotoImage(imagen)
 
-            label = tk.Label(self.ventanaArbol, image=imagen_tk)
-            label.image = imagen_tk 
-            label.pack(pady=10)
+            imagenArbol.configure(image=self.imagen_tk)
+            imagenArbol.image = self.imagen_tk
         else:
             messagebox.showinfo("Árbol vacío", "No hay elementos en el árbol.")
 
@@ -650,7 +655,6 @@ class ABB:
         botonProfundidad.grid(row=7, column=3)
 
         self.ventana.mainloop()
-
 
 class Principal:
     def __init__(self):
