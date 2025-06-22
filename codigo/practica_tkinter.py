@@ -15,6 +15,11 @@ Modificaciones:
 ## :::::::::::::::::::: IMPORTACION DE MODULOS Y BIBLIOTECAS ::::::::::::::::::::
 
 import tkinter as tk
+import threading
+import queue
+import time
+import random
+from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -508,8 +513,8 @@ class ABB:
         # Creacion de la imagen del arbol
         dot = self.visualizar()
         if dot:
-            dot.render("imagen/imagen_arbol", format="png", cleanup=True)
-            imagen = Image.open("imagen/imagen_arbol.png")
+            dot.render("arbol_binario", format="png", cleanup=True)
+            imagen = Image.open("arbol_binario.png")
             imagen = imagen.resize((500, 500))
             self.imagen_tk = ImageTk.PhotoImage(imagen)
 
@@ -656,6 +661,106 @@ class ABB:
 
         self.ventana.mainloop()
 
+class Concurrencia:
+    def __init__(self):
+        self.cola = queue.Queue()
+        self.lock = threading.Lock()
+        self.atendidos = 0
+
+    def llegada_clientes(self, total):
+        for i in range(1, total + 1):
+            time.sleep(random.uniform(0.05, 0.2))
+            self.cola.put(f'Cliente-{i}')
+            self.insertar_texto(f'Llego Cliente--{i} (En cola: {self.cola.qsize()})')
+
+    def caja(self, numero):
+        while True:
+            try:
+                cliente = self.cola.get(timeout=2)
+            except queue.Empty:
+                break
+
+            with self.sem:
+                self.insertar_texto(f'[Caja--{numero}] Atendiendo a {cliente}')
+                time.sleep(random.uniform(0.2, 0.6))
+
+                # Se agrego un lock que evita condiciones de carrera
+                with self.lock:
+                    self.atendidos += 1
+
+                self.insertar_texto(f'[Caja--{numero}] Termino con {cliente} | Total atendidos: {self.atendidos}')
+                self.cola.task_done()
+
+    def atender(self):
+        personas = int(self.cantidad.get())
+        cajas = int(self.cajas.get())
+        self.sem = threading.Semaphore(cajas)
+
+        # Se limpian los Entry
+        self.cantidad.delete(0, tk.END)
+        self.cajas.delete(0, tk.END)
+
+        hilo_productor = threading.Thread(target=self.llegada_clientes, args=(personas,))
+        hilo_productor.start()
+
+        hilos_cajas = [threading.Thread(target=self.caja, args=(i,)) for i in range (1, cajas)]
+
+        self.insertar_texto('SIMULACION DE DULCERIA CP\n')
+
+        for h in hilos_cajas:
+            h.start()
+
+        hilo_productor.join()
+        self.cola.join()
+
+        for h in hilos_cajas:
+            h.join()
+
+        self.resultado = tk.Label(self.ventanaConcurrencia, text=f'\nFINALIZADO \nTotal esperado: {personas} | Total atendidos: {self.atendidos}', font=('Arial', 16))
+        self.resultado.grid(row=7, column=0, columnspan=2)
+
+    def iniciar_atencion(self):
+        hilo_atencion = threading.Thread(target=self.atender)
+        hilo_atencion.start()
+
+    def insertar_texto(self, mensaje):
+        self.fila.insert(tk.END, mensaje + '\n')
+        self.fila.see(tk.END)
+
+    def resetear(self):
+        self.fila.delete('1.0', tk.END)
+        self.fila.see(tk.END)
+        self.resultado.config(text='')
+
+    def crearVentana(self):
+        # Creacion de la ventana principal
+        self.ventanaConcurrencia = tk.Tk()
+        self.ventanaConcurrencia.title('Arbol binario')
+        self.ventanaConcurrencia.geometry('550x450+500+240')
+
+        # Creacion de la interfaz interactiva con el usuario
+          ## Especificacion al ususario de que colocar
+        tk.Label(self.ventanaConcurrencia, text=f'Cantidad en la fila:', font=('Arial',16)).grid(row=0, column=0)
+        tk.Label(self.ventanaConcurrencia, text=f'Cajas disponibles:', font=('Arial',16)).grid(row=1, column=0)
+
+          ## Area donde se simulara la dulceria CP
+        self.fila = ScrolledText(self.ventanaConcurrencia, width=60, height=15, font=('Consolas', 10))
+        self.fila.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+
+          ## Creacion de las entradas de datos
+        self.cantidad = tk.Entry(self.ventanaConcurrencia)
+        self.cantidad.grid(row=0, column=1)
+        self.cajas = tk.Entry(self.ventanaConcurrencia)
+        self.cajas.grid(row=1, column=1)
+
+        # Creacion de botones
+        botonA = tk.Button(self.ventanaConcurrencia, text='Atender', command=self.iniciar_atencion)
+        botonA.grid(row=0, column=3)
+        botonB = tk.Button(self.ventanaConcurrencia, text='Resetear', command=self.resetear)
+        botonB.grid(row=1, column=3)
+
+        self.ventanaConcurrencia.mainloop()
+
 class Principal:
     def __init__(self):
         self.lista = Lista()
@@ -666,6 +771,7 @@ class Principal:
         self.grafoDirigido = GrafoDirigido()
         self.grafoNoDirigido = GradoNoDirigido()
         self.ABB = ABB()
+        self.concurrencia = Concurrencia()
         self.crearMenu()
     
     def crearMenu(self):
@@ -694,6 +800,9 @@ class Principal:
         menu_grafos.add_command(label='Arbol binario', command=self.ABB.crearVentana)
         menu_principal.add_cascade(label='Grafos', menu=menu_grafos)
         ventana.config(menu=menu_principal)
+        #Creacion concurrencia
+        menu_principal.add_command(label='Concurrencia', command=self.concurrencia.crearVentana)
+
         ventana.mainloop()
 
 ## :::::::::::::::::::::::: VARIABLES U OBJETOS GLOBALES ::::::::::::::::::::::::
@@ -706,17 +815,5 @@ nodos = []
 
 if __name__ == '__main__':
     menu = Principal()
-## :::::::::::::::::::::::::::::::: COMENTARIOS :::::::::::::::::::::::::::::::::
-'''
-Es necesario descargar las siguientes bibliotecas:
-pip install pillow
-pip install graphviz pillow
-
-
-Ademas se debe tener instalado Graphviz en el sistema y agregado en el PATH
-para que funcione el codigo.
-link de descarga: https://graphviz.org/download/
-
-'''
 
     
