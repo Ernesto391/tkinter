@@ -6,10 +6,10 @@ Realizado por: PIÑA SALINAS LUIS ERNESTO
 Descripcion: En una ventana de tkinter habra un menu en donde contendra 
 ejemplos de contenedores, estructuras de datos y grafos
 
-Version 1.3
+Version 1.4
 Modificaciones:
-+ Se agrego la clase ABB
-+ Se agrego el url codigo/imagenes/arbol_binario en el metodo verArbol()
++ Se agrego la clase Concurrencia
++ Se agrega el apartado concurrencia en el menu principal
 
 '''
 ## :::::::::::::::::::: IMPORTACION DE MODULOS Y BIBLIOTECAS ::::::::::::::::::::
@@ -501,15 +501,6 @@ class ABB:
         self.parcial3Entry.delete(0, tk.END)
 
     def verArbol(self):
-        # Cracion de la ventana para ver el arbol
-        self.ventanaArbol = tk.Toplevel(self.ventana)
-        self.ventanaArbol.title('Viendo el arbol')
-        self.ventanaArbol.geometry('500x500+500+240')
-
-        # Creacion del espacio para ver el arbol
-        imagenArbol = tk.Label(self.ventanaArbol)
-        imagenArbol.pack(pady=10)
-
         # Creacion de la imagen del arbol
         dot = self.visualizar()
         if dot:
@@ -518,8 +509,8 @@ class ABB:
             imagen = imagen.resize((500, 500))
             self.imagen_tk = ImageTk.PhotoImage(imagen)
 
-            imagenArbol.configure(image=self.imagen_tk)
-            imagenArbol.image = self.imagen_tk
+            self.imagenArbol.configure(image=self.imagen_tk)
+            self.imagenArbol.image = self.imagen_tk
         else:
             messagebox.showinfo("Árbol vacío", "No hay elementos en el árbol.")
 
@@ -627,8 +618,12 @@ class ABB:
         tk.Label(self.ventana, text=f'Calificacion del tercer parcial', font=('Arial',16)).grid(row=3, column=0)
         tk.Label(self.ventana, text=' ', font=('Arial',16)).grid(row=4, column=0) # Esta parte es para crear un espacio en blanco y mejorar el diseño
         tk.Label(self.ventana, text=' ', font=('Arial',16)).grid(row=6, column=0) # Esta parte es para crear un espacio en blanco y mejorar el diseño
+          ## Espacio para mostrar las busquedas inorden, postorden, preorden
         self.mostrar = tk.Label(self.ventana, text=' ', font=('Arial',16))
         self.mostrar.grid(row=10, column=0)
+          ## Espacio para ver el arbol
+        self.imagenArbol = tk.Label(self.ventana)
+        self.imagenArbol.grid(row=11, column = 0)
           ## Creacion de las entradas de datos
         self.boletaEntry = tk.Entry(self.ventana)
         self.boletaEntry.grid(row=0, column=1)
